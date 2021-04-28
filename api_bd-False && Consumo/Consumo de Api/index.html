@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consumo de api</title>
+</head>
+<body>
+    <hr>
+    <h4>Lista de Games</h4>
+    <ul id="games"></ul>
+    <hr>
+    <h4>Novo Formulario</h4>
+    <input type="text" name="title" id="title" placeholder="Titulo">
+    <input type="number" name="price" id="price" placeholder="Price">
+    <input type="number" name="year" id="year" placeholder="Year">
+    <button type="button" onclick="criarGame()"> Criar</button>
+    <hr>
+    <h4>Edit Game</h4>
+    <input type="hidden" name="idEdit" id="idEdit">
+    <input type="text" name="titleEdit" id="titleEdit" placeholder="Titulo">
+    <input type="number" name="priceEdit" id="priceEdit" placeholder="Price">
+    <input type="number" name="yearEdit" id="yearEdit" placeholder="Year">
+    <button type="button" onclick="updateGame()"> Editar</button>
+
+
+</body>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+   const criarGame =()=> {
+       let title = document.getElementById("title").value
+       let price = document.getElementById("price").value
+       let year = document.getElementById("year").value
+
+    let game = {
+        title, price, year
+    }
+       axios.post("http://localhost:45678/game", game).then(request=> {
+           if(response.status == 200) {
+               alert("game Cadastradas")
+           } else{
+               console.log("deu erro")
+           }
+       })
+   }
+   
+   
+const deleteGame = (item)=> {
+    const id = item.getAttribute("data-id")
+    console.log(id)
+    axios.delete("http://localhost:45678/game/" + id).then(request=>{
+        alert("gamedeletado")
+    }).catch(error=>{
+        console.log(error)
+    })
+}
+
+
+const loadForm =(form) => {
+    const id = form.getAttribute("data-id")
+    let title = form.getAttribute("data-title")
+    let year = form.getAttribute("data-year")
+    let price = form.getAttribute("data-price")
+
+    document.getElementById("idEdit").value= id
+    document.getElementById("titleEdit").value= title
+    document.getElementById("priceEdit").value= price
+    document.getElementById("yearEdit").value= year
+}
+
+const updateGame = () =>{
+    let idInput = document.getElementById("idEdit").value
+       let titleInput = document.getElementById("titleEdit").value
+       let priceInput = document.getElementById("priceEdit").value
+       let yearInput = document.getElementById("yearEdit").value
+
+    let game = {
+        title
+        , price, year
+    }
+    const id = idInput
+       axios.put("http://localhost:45678/game/"+id, game).then(request=> {
+           if(response.status == 200) {
+               alert("game Atualizada")
+           } else{
+               console.log("deu erro")
+           }
+       })
+}
+
+   axios.get("http://localhost:45678/games").then(request => {
+        let games = request.data
+        let list = document.getElementById("games")
+
+        games.forEach(game => {
+         var item = document.createElement("li")
+
+         item.setAttribute("data-id",game.id)
+         item.setAttribute("data-title",game.title)
+         item.setAttribute("data-price",game.price)
+         item.setAttribute("data-year",game.year)
+
+         item.innerHTML = game.id+ "- "+ game.title + "- " + game.price +"- "+ game.year;
+
+         let deleteBtn = document.createElement("button")
+         deleteBtn.innerHTML = "Deletar";
+         deleteBtn.addEventListener("click",  function() {
+            deleteGame(item)
+         })
+
+         
+         
+         let editBtn = document.createElement("button")
+         editBtn.innerHTML = "Editar";
+         item.appendChild(editBtn);
+         
+         editBtn.addEventListener("click",  function() {
+            loadForm(item)
+         })
+
+         item.appendChild(deleteBtn);
+         list.appendChild(item)
+        })
+    }).catch(error=> {
+        console.log(error)
+    })
+</script>
+</html>
