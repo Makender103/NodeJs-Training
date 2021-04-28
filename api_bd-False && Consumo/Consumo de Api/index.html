@@ -8,6 +8,11 @@
 </head>
 <body>
     <hr>
+    <h4>Login</h4>
+    <input type="text" name="email" id="email" placeholder="makender103@gmail.com">
+    <br><input type="password" name="password" id="password" placeholder="******">
+    <button onclick="login()">Entrar</button>
+    <hr>
     <h4>Lista de Games</h4>
     <ul id="games"></ul>
     <hr>
@@ -28,6 +33,27 @@
 </body>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
+    const login =()=> {
+        let email = document.getElementById("email").value
+        let password = document.getElementById("password").value
+
+        axios.post("http://localhost:45678/auth", {
+            email,
+            password
+        }).then(res=> {
+            let token =res.data.token
+            localStorage.setItem("token", token)
+            axiosConfig.headers.Authorization = "Bearer" + localStorage.getItem("token")
+        }).catch(err=> {
+            alert("Login incorreto ...")
+        })
+    }
+
+    let axiosConfig = {
+        headers: {
+            Authorization: "Bearer " + localStorage.getItem("token")
+        }
+    }
    const criarGame =()=> {
        let title = document.getElementById("title").value
        let price = document.getElementById("price").value
@@ -36,8 +62,8 @@
     let game = {
         title, price, year
     }
-       axios.post("http://localhost:45678/game", game).then(request=> {
-           if(response.status == 200) {
+       axios.post("http://localhost:45678/game", game, axiosConfig).then(request=> {
+           if(request.status == 200) {
                alert("game Cadastradas")
            } else{
                console.log("deu erro")
@@ -49,7 +75,7 @@
 const deleteGame = (item)=> {
     const id = item.getAttribute("data-id")
     console.log(id)
-    axios.delete("http://localhost:45678/game/" + id).then(request=>{
+    axios.delete("http://localhost:45678/game/" + id, axiosConfig).then(request=>{
         alert("gamedeletado")
     }).catch(error=>{
         console.log(error)
@@ -89,8 +115,8 @@ const updateGame = () =>{
        })
 }
 
-   axios.get("http://localhost:45678/games").then(request => {
-        let games = request.data
+   axios.get("http://localhost:45678/games", axiosConfig).then(request => {
+        let games = request.data.games
         let list = document.getElementById("games")
 
         games.forEach(game => {
