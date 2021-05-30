@@ -1,4 +1,5 @@
 <template>
+<img src="" alt="">
 <div id="pokemon">
     <div class="card">
         <div class="card-image">
