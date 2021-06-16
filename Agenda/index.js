@@ -4,6 +4,8 @@ const bodyParser = require("body-parser")
 const mongoose = require("mongoose")
 const config = require("./config/config");
 
+
+
 const AppointementService = require("./services/AppointementService")
 
 app.use(express.static("public"))
@@ -20,6 +22,8 @@ mongoose.connect(config.MONGO_URI, { useNewUrlParser: true }).then(()=>{
   }).catch(error => {
     console.log("Error: "+error);
   });
+
+mongoose.set('useFindAndModify', false)
 
 app.get("/", (req, res)=> {
     res.render("index")
@@ -53,8 +57,41 @@ app.get("/getcalendar", async (req, res) => {
 })
 
 app.get("/event/:id", async (req, res)=> {
-  res.json({id: req.params.id})
+  let appointement = await AppointementService.getById(req.params.id);
+  res.render("event", {appo: appointement})
 })
+
+
+
+app.post("/finish", async(req, res)=> {
+  const id = req.body.id;
+
+  await AppointementService.finish(id)
+
+  res.redirect("/");
+})
+
+app.get("/list", async(req, res)=> {
+  let appos = await AppointementService.getAll(true)
+  res.render("list", {appos})
+});
+
+app.get("/searchresult", async(req, res)=>{
+  const appos = await AppointementService.search(req.query.search)
+  res.render("list", {appos})
+})
+
+
+
+let pollTime = 1000 *60 *5
+
+setInterval(async () => {
+  await AppointementService.sendNotification()
+}, pollTime);
+
+
+
+
 
 app.listen(config.LISTEN_PORT, () => {
     console.log(`The API is running at http://localhost:${config.LISTEN_PORT}`);
